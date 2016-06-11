@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>ddmusic</title>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <script src="http://cdn.pubnub.com/pubnub-3.14.7.min.js"></script>
+  </head>
+  <body>
+    <div>
+      <!-- 1. The <iframe> (and video player) will replace this <div> tag. -->
+      <h1>1</h1>
+      <div>
+        <div id="player"></div>
+        <button onclick="send(1)" style="height:100px;width:168px;vertical-align:top">PLAY!!!!</button>
+        <button onclick="sendPause(1)" style="height:100px;width:168px;vertical-align:top">PAUSE!!!!</button>
+      </div>
+      <br /><br /><br /><br />
+
+      <h1>2</h1>
+      <div>
+        <div id="player2"></div>
+        <button onclick="send(2)" style="height:100px;width:168px;vertical-align:top">PLAY!!!!</button>
+        <button onclick="sendPause(2)" style="height:100px;width:168px;vertical-align:top">PAUSE!!!!</button>
+      </div>
+      <br /><br /><br /><br />
+
+      <h1>3</h1>
+      <div>
+        <div id="player3"></div>
+        <button onclick="send(3)" style="height:100px;width:168px;vertical-align:top">PLAY!!!!</button>
+        <button onclick="sendPause(3)" style="height:100px;width:168px;vertical-align:top">PAUSE!!!!</button>
+      </div>
+      <br /><br /><br /><br />
+
+      <h1>4</h1>
+      <div>
+        <div id="player4"></div>
+        <button onclick="send(4)" style="height:100px;width:168px;vertical-align:top">PLAY!!!!</button>
+        <button onclick="sendPause(4)" style="height:100px;width:168px;vertical-align:top">PAUSE!!!!</button>
+      </div>
+      <br /><br /><br /><br />
+
+      <h1>5</h1>
+      <div>
+        <div id="player5"></div>
+        <button onclick="send(5)" style="height:100px;width:168px;vertical-align:top">PLAY!!!!</button>
+        <button onclick="sendPause(5)" style="height:100px;width:168px;vertical-align:top">PAUSE!!!!</button>
+      </div>
+    </div>
+
+    <script>
+      var pubnub = PUBNUB({
+        subscribe_key: 'sub-c-bcab543a-2d49-11e6-8bc8-0619f8945a4f', // always required
+        publish_key: 'pub-c-62d4e7c4-4eaf-46f6-95c6-d7701b8a97c3' // only required if publishing
+      });
+
+      function send(d) {
+        pubnub.publish({
+          channel: 'dd',
+          message: {
+            action: 'play',
+            video: d,
+          },
+        });
+      }
+      function sendPause(d) {
+        pubnub.publish({
+          channel: 'dd',
+          message: {
+            action: 'pause',
+            video: d,
+          },
+        });
+      }
+
+      pubnub.subscribe({
+        channel : "dd",
+        message : function (message, envelope, channelOrGroup, time, channel) {
+          if (message.action === 'play') {
+            player[message.video].playVideo();
+            player[message.video].seekTo(0, true)
+          } else if (message.action === 'pause') {
+            player[message.video].pauseVideo();
+          }
+        },
+        // connect : pub
+      })
+      // 2. This code loads the IFrame Player API code asynchronously.
+      var tag = document.createElement('script');
+
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 3. This function creates an <iframe> (and YouTube player)
+      //    after the API code downloads.
+      var player = [];
+      function onYouTubeIframeAPIReady() {
+
+        window.player[1] = player[1] = new YT.Player('player', {
+          height: '390',
+          width: '640',
+          videoId: 'UuxTn5vC8VM',
+          events: {
+            onReady: onPlayerReady,
+            // onStateChange: onPlayerStateChange
+          }
+        });
+
+        // 2
+        window.player[2] = player[2] = new YT.Player('player2', {
+          height: '390',
+          width: '640',
+          videoId: 'KUFgjTuvAvs',
+          events: {
+            onReady: onPlayerReady,
+          }
+        });
+
+        // 3
+        window.player[3] = player[3] = new YT.Player('player3', {
+          height: '390',
+          width: '640',
+          videoId: '5y_KJAg8bHI',
+          events: {
+            onReady: onPlayerReady,
+          }
+        });
+
+        // 4
+        window.player[4] = player[4] = new YT.Player('player4', {
+          height: '390',
+          width: '640',
+          videoId: 'TMSIR210mRg',
+          events: {
+            onReady: onPlayerReady,
+          }
+        });
+
+        // 5
+        window.player[5] = player[5] = new YT.Player('player5', {
+          height: '390',
+          width: '640',
+          videoId: 'cHHLHGNpCSA',
+          events: {
+            onReady: onPlayerReady,
+          }
+        });
+      }
+
+      // 4. The API will call this function when the video player is ready.
+      function onPlayerReady(event) {
+        event.target.setPlaybackQuality('small')
+        event.target.playVideo();
+        event.target.pauseVideo();
+        event.target.seekTo(0, true);
+      }
+
+      // 5. The API calls this function when the player's state changes.
+      //    The function indicates that when playing a video (state=1),
+      //    the player should play for six seconds and then stop.
+      var done = false;
+      function onPlayerStateChange(event) {
+        // if (event.data == YT.PlayerState.PLAYING && !done) {
+        //   setTimeout(stopVideo, 6000);
+        //   done = true;
+        // }
+      }
+      function stopAllVideo() {
+        for (var i = 1; i < 6; i++) {
+          player[i].stopVideo();
+        }
+      }
+    </script>
+  </body>
+</html>
