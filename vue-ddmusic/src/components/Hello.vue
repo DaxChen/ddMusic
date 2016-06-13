@@ -6,22 +6,22 @@
         <h1>Welcome to ddMusic</h1>
       </div>
       <p>
-        Make sure you have LAN server running for the best performance.
+        Enter a room id to join!
       </p>
-      <form class="ip-wrapper" @submit.prevent="onSubmitIp">
+      <form class="id-wrapper" @submit.prevent="onSubmitId">
         <div class="input-field">
-          <label for="ip">Enter the LAN server IP</label>
-          <input v-model="ip" class="validate" id="ip" type="text" />
+          <label for="id">Enter a room id, can be anything~</label>
+          <input v-model="id" class="validate" id="id" type="text" />
         </div>
         <div>
           <button
-            class="btn waves-effect waves-light{{(ipValid && !connecting) ? '' : ' disabled'}}"
+            class="btn waves-effect waves-light{{!id ? ' disabled' : ''}}"
             type="submit"
-            disabled={{(!ipValid||connecting)}}
+            disabled={{!id}}
           >
-            {{ connecting ? 'Connecting...' : 'Submit' }}
+            Submit
             <i class="right {{connecting ? 'fa fa-spin fa-refresh':'material-icons'}}">
-              {{connecting ? '' : 'send'}}
+              send
             </i>
           </button>
         </div>
@@ -31,33 +31,19 @@
 </template>
 
 <script>
-import sock from '../socket-client';
-// eslint-disable-next-line
-const pattern = /\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/;
-
+import pubnub from '../pubnub';
 export default {
   props: ['connected'],
   data() {
     return {
-      ip: '',
-      connecting: false,
+      id: '',
     };
   },
-  computed: {
-    ipValid() {
-      return pattern.test(this.ip);
-    },
-  },
   methods: {
-    onSubmitIp() {
-      this.connecting = true;
-
-      sock.connect(this.ip, success => {
-        this.connecting = false;
-        if (success) {
-          this.$dispatch('on-connect-success');
-        }
-      });
+    onSubmitId() {
+      console.log('submit!!!');
+      pubnub.connect(this.id.trim());
+      this.$dispatch('on-connect-success');
     },
   },
 };
@@ -98,7 +84,7 @@ export default {
   height: 100px;
 }
 
-.ip-wrapper {
+.id-wrapper {
   color: #d6d6d7;
 }
 </style>
