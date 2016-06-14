@@ -20,15 +20,13 @@
 
   <search-result :search-items="searchItems"></search-result>
 
-  <div v-show="list.list.length">
+  <div v-show="list.list.length" class="dummyclass{{insertYT}}">
     <h1>Youtube Player:</h1>
     <div id="yt-player"></div>
     <div>
       <button @click="play" class="waves-effect waves-light btn">Play!!!!</button>
     </div>
   </div>
-  <pre>{{ insertYT | json }}</pre>
-  <pre>{{ list | json }}</pre>
 
   <play-list :list="list.list"></play-list>
 </template>

@@ -16,7 +16,11 @@
       </div>
       <div>{{ item.description }}</div>
 
-      <button @click="addToPlayList(item)">Add to playlist</button>
+      <button
+        v-if="addToPlaylistBtn"
+        class="waves-effect waves-light btn"
+        @click="addToPlayList(item)"
+      >Add to playlist</button>
     </div>
   </li>
 </template>
@@ -25,7 +29,7 @@
 import moment from 'moment';
 import list from '../list';
 export default {
-  props: ['item'],
+  props: ['item', 'addToPlaylistBtn'],
   data() {
     return {
     };
