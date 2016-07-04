@@ -24,7 +24,10 @@
     <h1>Youtube Player:</h1>
     <div id="yt-player"></div>
     <div>
-      <button @click="play" class="waves-effect waves-light btn">Play!!!!</button>
+      <button @click="previous" class="waves-effect waves-light btn"><i class="fa fa-step-backward"></i></button>
+      <button v-if="!playing" @click="play" class="waves-effect waves-light btn"><i class="fa fa-play"></i></button>
+      <button v-else @click="pause" class="waves-effect waves-light btn"><i class="fa fa-pause"></i></button>
+      <button @click="next" class="waves-effect waves-light btn"><i class="fa fa-step-forward"></i></button>
     </div>
   </div>
 
@@ -32,19 +35,53 @@
 </template>
 
 <script>
-/* global $ */
+/* global $, player */
 
+import pubnub from '../pubnub';
 import list from '../list';
 import PlayList from './PlayList';
 import SearchResult from './SearchResult';
+
+const playerState = {
+  isPlaying: false,
+};
+window.playerState = playerState;
+
+function playNext() {
+  list.list.push(list.list[0]);
+  list.list.shift();
+  player.cueVideoById(list.list[0].id, 0, 'small');
+}
+
 function onPlayerReady(event) {
   event.target.setPlaybackQuality('small');
   event.target.playVideo();
   event.target.pauseVideo();
   event.target.seekTo(0, true);
 }
+function onPlayerStateChange(e) {
+  /* -1 (unstarted) */
+  /* 0 (ended) */
+  /* 1 (playing) */
+  /* 2 (paused) */
+  /* 3 (buffering) */
+  /* 5 (video cued) */
+  console.log('onPlayerStateChange:', e.data);
+  playerState.isPlaying = player.getPlayerState() === 1;
+  if (e.data === 5) {
+    // play the video after cued
+    player.playVideo();
+    player.pauseVideo();
+    player.seekTo(0, true);
+    setTimeout(() => pubnub.sendPlay(), 300);
+  }
+  if (e.data === 0) {
+    console.log('detected video end!');
+    playNext();
+  }
+}
 
-window.list = list;
+/* window.list = list; */
 export default {
   components: {
     'play-list': PlayList,
@@ -56,6 +93,7 @@ export default {
       playerInserted: false,
       search: '',
       searchItems: [],
+      playerState,
     };
   },
   computed: {
@@ -72,10 +110,22 @@ export default {
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
       }
     },
+    playing() {
+      return playerState.isPlaying;
+    },
   },
   methods: {
     play() {
-      /* sock.sendPlay(); */
+      pubnub.sendPlay();
+    },
+    pause() {
+      pubnub.sendPause();
+    },
+    previous() {
+      pubnub.sendPrevious();
+    },
+    next() {
+      pubnub.sendNext();
     },
     onSearchSubmit() {
       console.log('searching:', this.search.trim());
@@ -85,7 +135,7 @@ export default {
 &type=video\
 &q=${this.search.trim()}`;
       $.get(url, data => {
-        console.log(data);
+        /* console.log(data); */
         this.searchItems = data.items.map(item => ({
           id: item.id.videoId,
           title: item.snippet.title,
@@ -115,7 +165,7 @@ window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() { // eslint-
     videoId: list.list[0].id,
     events: {
       onReady: onPlayerReady,
-      // onStateChange: onPlayerStateChange
+      onStateChange: onPlayerStateChange,
     },
   });
 

@@ -1,4 +1,4 @@
-/* global PUBNUB */
+/* global PUBNUB, player */
 
 import list from './list';
 
@@ -40,6 +40,33 @@ const exp = {
           list.list = msg.list;
         }
         break;
+      case 'play':
+        console.log('got play!', msg.time);
+        player.playVideo();
+        player.seekTo(msg.time);
+        break;
+      case 'pause':
+        console.log('got pause!', msg.time);
+        if (msg.userId !== this.userId) {
+          player.pauseVideo();
+        }
+        player.seekTo(msg.time);
+        break;
+      case 'previous':
+        console.log('got previous!');
+        // player.playVideo();
+        // player.seekTo(0, true);
+        list.list.unshift(list.list.pop());
+        player.cueVideoById(list.list[0].id, 0, 'small');
+        break;
+      case 'next':
+        console.log('got next!');
+        // player.playVideo();
+        // player.seekTo(0, true);
+        list.list.push(list.list[0]);
+        list.list.shift();
+        player.cueVideoById(list.list[0].id, 0, 'small');
+        break;
       default:
         console.warn('unkown action!!', msg);
     }
@@ -60,6 +87,46 @@ const exp = {
         userId: this.userId,
         action: 'postList',
         list: list.list,
+      },
+    });
+  },
+  sendPlay(songId) {
+    this.pubnub.publish({
+      channel: this.channel,
+      message: {
+        userId: this.userId,
+        action: 'play',
+        songId,
+        time: player.getCurrentTime(),
+      },
+    });
+  },
+  sendPause() {
+    player.pauseVideo();
+    this.pubnub.publish({
+      channel: this.channel,
+      message: {
+        userId: this.userId,
+        action: 'pause',
+        time: player.getCurrentTime(),
+      },
+    });
+  },
+  sendPrevious() {
+    this.pubnub.publish({
+      channel: this.channel,
+      message: {
+        userId: this.userId,
+        action: 'previous',
+      },
+    });
+  },
+  sendNext() {
+    this.pubnub.publish({
+      channel: this.channel,
+      message: {
+        userId: this.userId,
+        action: 'next',
       },
     });
   },

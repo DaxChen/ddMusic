@@ -2,7 +2,12 @@
   <div id="list-wrapper">
     <h2> PlayList: </h2>
     <ul class="container">
-      <song v-for="item in list" :item="item"></song>
+      <song
+        v-for="item in list"
+        :item="item"
+        :remove-btn="true"
+        :index="$index"
+      ></song>
     </ul>
   </div>
 </template>

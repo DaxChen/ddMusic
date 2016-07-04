@@ -10,6 +10,10 @@ const list = {
     this.list = newList;
     pubnub.postList();
   },
+  remove(idx) {
+    this.list.splice(idx, 1);
+    pubnub.postList();
+  },
 };
 
 export default list;

@@ -18,6 +18,9 @@ import VueRouter from 'vue-router';
 // custom
 import App from './App';
 
+// set player as global
+window.player = null;
+
 Vue.use(VueRouter);
 
 /* eslint-disable no-new */
