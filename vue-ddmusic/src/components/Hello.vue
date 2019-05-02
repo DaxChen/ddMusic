@@ -17,10 +17,10 @@
           <button
             class="btn waves-effect waves-light{{!id ? ' disabled' : ''}}"
             type="submit"
-            disabled={{!id}}
+            disabled={{!id.trim()}}
           >
             Submit
-            <i class="right {{connecting ? 'fa fa-spin fa-refresh':'material-icons'}}">
+            <i class="right material-icons">
               send
             </i>
           </button>
@@ -31,9 +31,7 @@
 </template>
 
 <script>
-import pubnub from '../pubnub';
 export default {
-  props: ['connected'],
   data() {
     return {
       id: '',
@@ -42,8 +40,9 @@ export default {
   methods: {
     onSubmitId() {
       console.log('submit!!!');
-      pubnub.connect(this.id.trim());
-      this.$dispatch('on-connect-success');
+      // pubnub.connect(this.id.trim());
+      // this.$dispatch('on-connect-success');
+      this.$router.go(`/${this.id.trim()}`);
     },
   },
 };

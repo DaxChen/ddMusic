@@ -1,37 +1,44 @@
 <template>
-  <div class="navbar-fixed">
-    <nav>
-      <div class="nav-wrapper">
-        <a href="#" class="brand-logo">ddMusic</a>
-        <div class="search-wrapper">
-          <form @submit.prevent="onSearchSubmit">
-            <div class="input-field">
-              <input v-model="search" type="search" required>
-              <label for="search"><i class="material-icons">search</i></label>
-            </div>
-          </form>
+<div class="main-wrapper">
+  <div v-if="!connected" class="loading">
+    <i class="material-icons fa fa-spin fa-refresh fa-5x"></i>
+  </div>
+  <div v-else>
+    <div class="navbar-fixed">
+      <nav>
+        <div class="nav-wrapper">
+          <a href="#" class="brand-logo">ddMusic</a>
+          <div class="search-wrapper">
+            <form @submit.prevent="onSearchSubmit">
+              <div class="input-field">
+                <input v-model="search" type="search" required>
+                <label for="search"><i class="material-icons">search</i></label>
+              </div>
+            </form>
+          </div>
+          <ul id="nav-mobile" class="right hide-on-med-and-down">
+            <li><a href="#">Home</a></li>
+          </ul>
         </div>
-        <ul id="nav-mobile" class="right hide-on-med-and-down">
-          <li><a href="#">Home</a></li>
-        </ul>
-      </div>
-    </nav>
-  </div>
-
-  <search-result :search-items="searchItems"></search-result>
-
-  <div v-show="list.list.length" class="dummyclass{{insertYT}}">
-    <h1>Youtube Player:</h1>
-    <div id="yt-player"></div>
-    <div>
-      <button @click="previous" class="waves-effect waves-light btn"><i class="fa fa-step-backward"></i></button>
-      <button v-if="!playing" @click="play" class="waves-effect waves-light btn"><i class="fa fa-play"></i></button>
-      <button v-else @click="pause" class="waves-effect waves-light btn"><i class="fa fa-pause"></i></button>
-      <button @click="next" class="waves-effect waves-light btn"><i class="fa fa-step-forward"></i></button>
+      </nav>
     </div>
-  </div>
 
-  <play-list :list="list.list"></play-list>
+    <search-result :search-items="searchItems"></search-result>
+
+    <div v-show="list.list.length" class="dummyclass{{insertYT}}">
+      <h1>Youtube Player:</h1>
+      <div id="yt-player"></div>
+      <div>
+        <button @click="previous" class="waves-effect waves-light btn"><i class="fa fa-step-backward"></i></button>
+        <button v-if="!playing" @click="play" class="waves-effect waves-light btn"><i class="fa fa-play"></i></button>
+        <button v-else @click="pause" class="waves-effect waves-light btn"><i class="fa fa-pause"></i></button>
+        <button @click="next" class="waves-effect waves-light btn"><i class="fa fa-step-forward"></i></button>
+      </div>
+    </div>
+
+    <play-list :list="list.list"></play-list>
+  </div>
+</div>
 </template>
 
 <script>
@@ -83,12 +90,14 @@ function onPlayerStateChange(e) {
 
 /* window.list = list; */
 export default {
+  name: 'Main',
   components: {
     'play-list': PlayList,
     'search-result': SearchResult,
   },
   data() {
     return {
+      connected: false,
       list,
       playerInserted: false,
       search: '',
@@ -114,6 +123,11 @@ export default {
       return playerState.isPlaying;
     },
   },
+  created() {
+    pubnub.connect(this.$route.params.id, () => {
+      this.connected = true;
+    });
+  },
   methods: {
     play() {
       pubnub.sendPlay();
@@ -130,7 +144,7 @@ export default {
     onSearchSubmit() {
       console.log('searching:', this.search.trim());
       const url = `https://www.googleapis.com/youtube/v3/search\
-?key=AIzaSyD6RKnO7af7wC63s_C89BoIvqo7K8O8sSM\
+?key=AIzaSyB68Bce0y54OqqdXhVxB5kp4-u66UZphCo\
 &part=snippet\
 &type=video\
 &q=${this.search.trim()}`;
@@ -183,6 +197,15 @@ window.onYouTubeIframeAPIReady = function onYouTubeIframeAPIReady() { // eslint-
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style>
+.main-wrapper {
+  height: 100%;
+}
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
 .input-field input[type=search] {
   height: inherit;
 }

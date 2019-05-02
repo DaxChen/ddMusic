@@ -25,15 +25,6 @@ Vue.use(VueRouter);
 
 /* eslint-disable no-new */
 
-// Define some components
-const Foo = Vue.extend({
-  template: '<p>This is foo!</p>',
-});
-
-const Bar = Vue.extend({
-  template: '<p>This is bar!</p>',
-});
-
 // The router needs a root component to render.
 // For demo purposes, we will just use an empty one
 // because we are using the HTML as the app template.
@@ -43,19 +34,23 @@ const Bar = Vue.extend({
 // Create a router instance.
 // You can pass in additional options here, but let's
 // keep it simple for now.
-const router = new VueRouter();
+const router = new VueRouter({
+  history: 'true',
+});
 
 // Define some routes.
 // Each route should map to a component. The "component" can
 // either be an actual component constructor created via
 // Vue.extend(), or just a component options object.
 // We'll talk about nested routes later.
+import Hello from './components/Hello';
+import Main from './components/Main';
 router.map({
-  '/foo': {
-    component: Foo,
+  '/': {
+    component: Hello,
   },
-  '/bar': {
-    component: Bar,
+  '/:id': {
+    component: Main,
   },
 });
 

@@ -1,4 +1,4 @@
-/* global PUBNUB, player */
+/* global PubNub, player */
 
 import list from './list';
 
@@ -6,36 +6,44 @@ const exp = {
   pubnub: null,
   userId: '',
   channel: '',
-  connect(channel) {
-    this.userId = Math.random();
+  connect(channel, cb) {
     this.channel = channel;
-    const pubnub = this.pubnub = PUBNUB({ // eslint-disable-line
-      subscribe_key: 'sub-c-bcab543a-2d49-11e6-8bc8-0619f8945a4f',
-      publish_key: 'pub-c-62d4e7c4-4eaf-46f6-95c6-d7701b8a97c3',
+    this.pubnub = new PubNub({
+      publishKey: 'pub-c-734121f5-e56c-49b3-9ab5-2145cfd3887c',
+      subscribeKey: 'sub-c-0afb138a-6ca5-11e9-8724-8269f6864ada',
     });
+    this.userId = this.pubnub.getUUID();
+    console.log(`My UUID is ${this.userId}`);
 
     const that = this;
 
-    pubnub.subscribe({
-      channel,
-      message(message/* , envelope, channelOrGroup, time, channel*/) {
+    this.pubnub.addListener({
+      status(statusEvent) {
+        if (statusEvent.category === 'PNConnectedCategory') {
+          console.log(`connected to channel: "${channel}"!!!!`);
+          cb();
+          that.getList();
+        }
+      },
+      message(message /* , envelope, channelOrGroup, time, channel*/) {
         that.processMsg(message);
       },
-      connect() {
-        console.log(`connected to channel: "${channel}"!!!!`);
-        that.getList();
-      },
+    });
+
+    this.pubnub.subscribe({
+      channels: [channel],
     });
   },
-  processMsg(msg) {
+  processMsg(payload) {
+    const msg = payload.message;
     switch (msg.action) {
       case 'getList':
-        if (msg.userId !== this.userId) {
+        if (payload.publisher !== this.userId) {
           this.postList();
         }
         break;
       case 'postList':
-        if (msg.userId !== this.userId) {
+        if (payload.publisher !== this.userId) {
           console.log('got list!', msg.list);
           list.list = msg.list;
         }
@@ -47,7 +55,7 @@ const exp = {
         break;
       case 'pause':
         console.log('got pause!', msg.time);
-        if (msg.userId !== this.userId) {
+        if (payload.publisher !== this.userId) {
           player.pauseVideo();
         }
         player.seekTo(msg.time);
@@ -75,7 +83,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'getList',
       },
     });
@@ -84,7 +91,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'postList',
         list: list.list,
       },
@@ -94,7 +100,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'play',
         songId,
         time: player.getCurrentTime(),
@@ -106,7 +111,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'pause',
         time: player.getCurrentTime(),
       },
@@ -116,7 +120,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'previous',
       },
     });
@@ -125,7 +128,6 @@ const exp = {
     this.pubnub.publish({
       channel: this.channel,
       message: {
-        userId: this.userId,
         action: 'next',
       },
     });

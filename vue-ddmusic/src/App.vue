@@ -1,32 +1,12 @@
 <template>
-  <div>
-    <hello
-      v-if="!connected"
-      :connected="connected"
-    ></hello>
-    <main v-else></main>
-  </div>
+<div>
+  <router-view></router-view>
+</div>
 </template>
 
 <script>
-import Hello from './components/Hello';
-import Main from './components/Main';
 
 export default {
-  components: {
-    hello: Hello,
-    main: Main,
-  },
-  data() {
-    return {
-      connected: false,
-    };
-  },
-  events: {
-    'on-connect-success'() {
-      this.connected = true;
-    },
-  },
 };
 </script>
 
